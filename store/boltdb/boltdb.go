@@ -30,6 +30,10 @@ const (
 	filePerm os.FileMode = 0644
 )
 
+const (
+	filePerm os.FileMode = 0644
+)
+
 //BoltDB type implements the Store interface
 type BoltDB struct {
 	client     *bolt.DB
