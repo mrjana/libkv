@@ -47,7 +47,7 @@ type Config struct {
 }
 
 // ClientTLSConfig contains data for a Client TLS configuration in the form
-//  the etcd client wants it.  Eventually we'll adapt it for ZK and Consul.
+// the etcd client wants it.  Eventually we'll adapt it for ZK and Consul.
 type ClientTLSConfig struct {
 	CertFile   string
 	KeyFile    string
@@ -109,7 +109,8 @@ type KVPair struct {
 
 // WriteOptions contains optional request parameters
 type WriteOptions struct {
-	TTL time.Duration
+	IsDir bool
+	TTL   time.Duration
 }
 
 // LockOptions contains optional request parameters
