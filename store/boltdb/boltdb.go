@@ -6,6 +6,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"sync"
 	"sync/atomic"
 	"time"
 
@@ -45,6 +46,7 @@ type BoltDB struct {
 	// PersistConnection flag provides an option to override ths behavior.
 	// ie: open the connection in New and use it till Close is called.
 	PersistConnection bool
+	sync.Mutex
 }
 
 const (
@@ -132,6 +134,8 @@ func (b *BoltDB) Get(key string) (*store.KVPair, error) {
 		db  *bolt.DB
 		err error
 	)
+	b.Lock()
+	defer b.Unlock()
 
 	if db, err = b.getDBhandle(); err != nil {
 		return nil, err
@@ -171,6 +175,9 @@ func (b *BoltDB) Put(key string, value []byte, opts *store.WriteOptions) error {
 		db      *bolt.DB
 		err     error
 	)
+	b.Lock()
+	defer b.Unlock()
+
 	dbval := make([]byte, libkvmetadatalen)
 
 	if db, err = b.getDBhandle(); err != nil {
@@ -203,6 +210,9 @@ func (b *BoltDB) Delete(key string) error {
 		db  *bolt.DB
 		err error
 	)
+	b.Lock()
+	defer b.Unlock()
+
 	if db, err = b.getDBhandle(); err != nil {
 		return err
 	}
@@ -226,6 +236,8 @@ func (b *BoltDB) Exists(key string) (bool, error) {
 		db  *bolt.DB
 		err error
 	)
+	b.Lock()
+	defer b.Unlock()
 
 	if db, err = b.getDBhandle(); err != nil {
 		return false, err
@@ -255,6 +267,9 @@ func (b *BoltDB) List(keyPrefix string) ([]*store.KVPair, error) {
 		db  *bolt.DB
 		err error
 	)
+	b.Lock()
+	defer b.Unlock()
+
 	kv := []*store.KVPair{}
 
 	if db, err = b.getDBhandle(); err != nil {
@@ -301,6 +316,8 @@ func (b *BoltDB) AtomicDelete(key string, previous *store.KVPair) (bool, error) 
 		db  *bolt.DB
 		err error
 	)
+	b.Lock()
+	defer b.Unlock()
 
 	if previous == nil {
 		return false, store.ErrPreviousNotSpecified
@@ -339,6 +356,9 @@ func (b *BoltDB) AtomicPut(key string, value []byte, previous *store.KVPair, opt
 		db      *bolt.DB
 		err     error
 	)
+	b.Lock()
+	defer b.Unlock()
+
 	dbval := make([]byte, libkvmetadatalen)
 
 	if db, err = b.getDBhandle(); err != nil {
@@ -393,6 +413,9 @@ func (b *BoltDB) AtomicPut(key string, value []byte, previous *store.KVPair, opt
 
 // Close the db connection to the BoltDB
 func (b *BoltDB) Close() {
+	b.Lock()
+	defer b.Unlock()
+
 	if !b.PersistConnection {
 		b.reset()
 	} else {
@@ -407,6 +430,9 @@ func (b *BoltDB) DeleteTree(keyPrefix string) error {
 		db  *bolt.DB
 		err error
 	)
+	b.Lock()
+	defer b.Unlock()
+
 	if db, err = b.getDBhandle(); err != nil {
 		return err
 	}
